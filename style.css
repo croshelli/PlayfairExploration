@@ -1,0 +1,118 @@
+#outerWrapper{
+	position:relative;
+	text-align:center;
+}
+#innerWrapper{
+	margin: 0 auto;
+	text-align: center;
+}
+#input-box{
+	float:left;
+	padding-top:50px;
+	padding-left:30px;
+}
+#canvas{
+	float:left;
+	text-align: center;
+	padding-left:100px;
+
+}
+
+@font-face {
+            src: local("Times");
+            font-family: embeddedTimes;
+            advancedAntiAliasing: true;
+            fontWeight: bold;
+        }
+        
+@font-face {
+    font-family: 'chancery_cursiveitalic';
+    src: url('../fonts/chancur-webfont.eot');
+    src: url('../fonts/chancur-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../fonts/chancur-webfont.woff2') format('woff2'),
+         url('../fonts/chancur-webfont.woff') format('woff'),
+         url('../fonts/chancur-webfont.ttf') format('truetype'),
+         url('../fonts/hancur-webfont.svg#chancery_cursiveitalic') format('svg');
+    font-weight: normal;
+    font-style: normal;
+    font-size: 120%;
+
+}
+
+
+
+
+@font-face {
+    font-family: 'maranalloregular';
+    src: url('../fonts/maranallo-webfont.eot');
+    src: url('../fonts/maranallo-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../fonts/maranallo-webfont.woff2') format('woff2'),
+         url('../fonts/maranallo-webfont.woff') format('woff'),
+         url('../fonts/maranallo-webfont.ttf') format('truetype'),
+         url('../fonts/maranallo-webfont.svg#maranalloregular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+    font-size: 120%;
+
+}
+        
+        .engravedItalic {
+            font-family: engravedItalic;
+            font-weight: normal;
+            color: #000000;
+        }
+        
+        .engraved {
+            font-family: engraved;
+            font-weight: normal;
+            color: #000000;
+        }
+        
+        .script {
+            font-family: hand;
+            font-size: 16;
+            color: #000000;
+            
+            font-style:italic;
+            font-weight: normal;
+        }
+
+        .x.axis path{
+        	fill:none;
+        }
+		.y.axis path{
+		        	fill: none;
+		        }
+		.x.axis{
+	        	font-size: xx-large;
+	        	font-family: 'chancery_cursiveitalic';
+	        	fill:black;
+	        }
+	    .y.axis{
+	        	font-size: xx-large;
+	        	font-family: 'chancery_cursiveitalic';
+	        	fill:black;
+	        }
+        .axisLabel{
+    		font-family: "Times New Roman", Times, serif;
+    		font-weight: bold;
+    		font-size: 24px;
+        }
+        .titleText{
+        	font-size: x-large;
+        	font-family: 'maranalloregular' ;
+        }
+        .titleText2{
+        	font-size: xx-large;
+        	font-family: 'chancery_cursiveitalic';
+        }
+        .titleText3{
+        	font-size: xx-large;
+        	font-family: 'maranalloregular' ;
+        }
+        #country{
+        	font-size:x-large;
+        	font-family: 'maranalloregular' ;
+        	fill:black;
+        	stroke:black;
+        }
