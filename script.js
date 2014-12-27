@@ -10,7 +10,7 @@ var IEData;
 var IECache= [];
 var IEPoints;
 var countryNames;
-var countryCodes;
+var countryNames1;
 
 var canvas = d3.select("#canvas").append("svg")
 				.attr("class", "chart")
@@ -38,7 +38,7 @@ function make_x_axis(scale) {
     return d3.svg.axis()
         .scale(scale)
          .orient("bottom")
-         .ticks(5)
+         .ticks(10)
 }
 
 function make_y_axis(scale) {        
@@ -182,10 +182,8 @@ function sortData(data){
 					 .sortKeys(d3.ascending)
 					 .map(data,d3.map);
 
-	countryNames= d3.nest().key(function(d){return d.CTYNAME;}).map(data,d3.map);
-	countryNames = countryNames.keys();
-	countryCodes= d3.nest().key(function(d){return d.CTYCODE;}).map(data,d3.map);
-	countryCodes = countryCodes.keys();
+	countryNames1= d3.nest().key(function(d){return d.CTYNAME;}).sortKeys(d3.ascending).map(data,d3.map);
+	countryNames = countryNames1.keys();
 }
 
 
@@ -196,7 +194,7 @@ $("#country").change(function(){
 		var newCountry=$(this).text();
 		var index= countryNames.indexOf(newCountry);
 		d3.selectAll("#currValue").remove();
-		drawChart(countryCodes[index]);
+		drawChart(countryNames1.get(newCountry)[0].CTYCODE);
 	})
 	
 })
@@ -289,6 +287,55 @@ function drawChart(ctyCode){
  	canvas.select('.y.axis').transition()
  			.call(make_y_axis(yScale)
             .tickSize(-width, 0, 0));
+
+
+//)******************************************CREATE GRAPH LABEL*************************************//
+var ellipseX=200;
+	var ellipseY=150;
+	var textX=75;
+	var textY=110;
+	//add Label
+	graph.append("ellipse")
+			.attr("id", "currValue")
+			.attr("cx", ellipseX)
+			.attr("cy", ellipseY)
+			.attr("rx", 170)
+			.attr("ry",120)
+			.attr("fill", "white")
+			.attr("stroke", "black")
+			.attr("stroke-width", 1);
+	graph.append("ellipse")
+			.attr("id", "currValue")
+			.attr("cx", ellipseX)
+			.attr("cy", ellipseY)
+			.attr("rx", 170)
+			.attr("ry",120)
+			.attr("fill","#FF4F4F")
+			.attr("opacity", .1)
+			.attr("stroke-width", 0);
+
+	graph.append("text")
+			.attr("id", "currValue")
+			.attr("class", "titleText")
+			.attr("x", textX)
+			.attr("y", textY)
+			.text("EXPORTS & IMPORTS");
+	graph.append("text")
+			.attr("id", "currValue")
+			.attr("class", "titleText2")
+			.attr("x", textX+50)
+			.attr("y", textY+40)
+			.text("to and from all");
+	graph.append("g")
+			.attr("id", "currValue")
+			.attr("class", "titleText3")
+			.attr("transform", "translate(55,0)")
+			.append("text")
+			.attr("x", (textX+150))
+			.attr("y", (textY+60))
+			.text(ctyName)
+			.call(wrap, 330);
+
 
 //*********************************************CREATE LINES************************************//
  	//line function.
@@ -404,52 +451,7 @@ function drawChart(ctyCode){
 			.attr("fill", "none");
 
 
-	var ellipseX=200;
-	var ellipseY=150;
-	var textX=75;
-	var textY=110;
-	//add Label
-	graph.append("ellipse")
-			.attr("id", "currValue")
-			.attr("cx", ellipseX)
-			.attr("cy", ellipseY)
-			.attr("rx", 170)
-			.attr("ry",120)
-			.attr("fill", "white")
-			.attr("stroke", "black")
-			.attr("stroke-width", 1);
-	graph.append("ellipse")
-			.attr("id", "currValue")
-			.attr("cx", ellipseX)
-			.attr("cy", ellipseY)
-			.attr("rx", 170)
-			.attr("ry",120)
-			.attr("fill","#FF4F4F")
-			.attr("opacity", .1)
-			.attr("stroke-width", 0);
-
-	graph.append("text")
-			.attr("id", "currValue")
-			.attr("class", "titleText")
-			.attr("x", textX)
-			.attr("y", textY)
-			.text("EXPORTS & IMPORTS");
-	graph.append("text")
-			.attr("id", "currValue")
-			.attr("class", "titleText2")
-			.attr("x", textX+50)
-			.attr("y", textY+40)
-			.text("to and from all");
-	graph.append("g")
-			.attr("id", "currValue")
-			.attr("class", "titleText3")
-			.attr("transform", "translate(55,0)")
-			.append("text")
-			.attr("x", (textX+150))
-			.attr("y", (textY+60))
-			.text(ctyName)
-			.call(wrap, 300);
-
+	
 //outline around graph
 canvas.append("rect")
 	   .attr("height", height)
