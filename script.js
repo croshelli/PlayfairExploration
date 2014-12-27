@@ -33,14 +33,48 @@ var ieValFormat = d3.format(function(d){
 	}
 });
 
-var xAxis = d3.svg.axis()
-			  .scale(xScale)
-			  .orient("bottom");
-var yAxis = d3.svg.axis()
-			  .scale(yScale)
-			  //.ticks(30)
-			  //.tickFormat(function(d){return ieValFormat(d);})
-			  .orient("right");
+
+function make_x_axis(scale) {        
+    return d3.svg.axis()
+        .scale(scale)
+         .orient("bottom")
+         .ticks(5)
+}
+
+function make_y_axis(scale) {        
+    return d3.svg.axis()
+        .scale(scale)
+        .orient("right")
+        .ticks(10)
+}
+
+canvas.append("g")         
+        .attr("class", "x axis", "grid")
+        .attr("transform", "translate("+margin.right+"," + (height+margin.top) + ")")
+        .call(make_x_axis(xScale)
+            .tickSize(-height, 0, 0)
+            .tickFormat("")
+        )
+
+canvas.append("g")         
+        .attr("class", "y axis", "grid")
+        .attr("transform", "translate("+ (width+margin.right) + "," + margin.top +")")
+        .call(make_y_axis(yScale)
+            .tickSize(-width, 0, 0)
+            .tickFormat("")
+        )
+// var xAxis = d3.svg.axis()
+// 			  .scale(xScale)
+// 			  .orient("bottom")
+// 			  .ticks(5)
+// 			  .tickSize(-height,0);
+// var yAxis = d3.svg.axis()
+// 			  .scale(yScale)
+// 			  .ticks(10)
+// 			  .tickSize(-width,0,0)
+// 			 // .tickFormat("")
+// 			  //.tickFormat(function(d){return ieValFormat(d);})
+// 			  .orient("right");
 
 //background color rectangle
 canvas.append("rect")
@@ -51,14 +85,7 @@ canvas.append("rect")
 		.attr("opacity", .1)
 		.attr("transform", "translate(" + (margin.right-(bgWidth-width)/2+50) + "," + (margin.top-(bgHeight-height)/2) + ")");			  
 
-//outline around graph
-canvas.append("rect")
-	   .attr("height", height)
-	   .attr("width", width)
-	   .attr("fill", "transparent")
-	   .attr("stroke", "black")
-	   .attr("stroke-width", 2)
-	   .attr("transform", "translate("+ margin.right + "," + margin.top + ")");
+
 
 //outline around graph and y axis
 canvas.append("rect")
@@ -87,15 +114,15 @@ canvas.append("rect")
 	   .attr("stroke-width", 5)
 	   .attr("transform", "translate("+ (margin.right-60) + "," + (margin.top-60) + ")");
 
-canvas.append("g")
-	  .attr("class", "x axis")
-	  .attr("transform", "translate("+margin.right+"," + (height+margin.top) + ")")
-	  .call(xAxis);
+// canvas.append("g")
+// 	  .attr("class", "x axis", "grid")
+// 	  .attr("transform", "translate("+margin.right+"," + (height+margin.top) + ")")
+// 	  .call(xAxis);
 
-canvas.append("g")
-	  .attr("class", "y axis")
-	  .attr("transform", "translate("+ (width+margin.right) + "," + margin.top +")")
-	  .call(yAxis);
+// canvas.append("g")
+// 	  .attr("class", "y axis", "grid")
+// 	  .attr("transform", "translate("+ (width+margin.right) + "," + margin.top +")")
+// 	  .call(yAxis);
 
 canvas.append("text")
 		.attr("class", "axisLabel")
@@ -136,7 +163,7 @@ d3.csv("all_import_export_country.csv", function(error,data){
 		allIEData = data;
 		sortData(allIEData);
 		addList();
-		drawChart(12); //to draw the current chart selected, must imput ctyCode to drawChart function in Integer format, not as a string
+		drawChart(9); //to draw the current chart selected, must imput ctyCode to drawChart function in Integer format, not as a string
 	}
 });
 
@@ -162,6 +189,44 @@ function sortData(data){
 }
 
 
+
+
+$("#country").change(function(){
+	$("#country option:selected").each(function(){
+		var newCountry=$(this).text();
+		var index= countryNames.indexOf(newCountry);
+		d3.selectAll("#currValue").remove();
+		drawChart(countryCodes[index]);
+	})
+	
+})
+
+function wrap(text, width) {
+  text.each(function() {
+    var text = d3.select(this),
+        words = text.text().split(/\s+/).reverse(),
+        word,
+        line = [],
+        lineNumber = 0,
+        lineHeight = 30, // ems
+        y = text.attr("y"),
+        dy = 10,
+        tspan = text.text(null).append("tspan").attr("x", 0).attr("y", y).attr("dy", dy);
+    while (word = words.pop()) {
+      line.push(word);
+      tspan.text(line.join(" "));
+      if (tspan.node().getComputedTextLength() > width) {
+        line.pop();
+        tspan.text(line.join(" "));
+        line = [word];
+        tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy).text(word);
+      }
+    }
+  });
+}
+
+
+
 function drawChart(ctyCode){
 	//get array corresponding to specific IE data we will use.
 	var currIEData = IEData.get(ctyCode);
@@ -171,6 +236,7 @@ function drawChart(ctyCode){
 	var IEValue=[];
 	var IMonthVals=[];
 	var EMonthVals=[];
+	var combineMonthVals=[];
 	var ctyName;
 
 	currIEData.forEach(function(d){
@@ -213,20 +279,19 @@ function drawChart(ctyCode){
 		IEValue.push(+d.y);
 	})
 
-	console.log(d3.max(IEValue));
-	console.log(IMonthVals);
-	console.log(EMonthVals);
 	//set x and y scales
 	xScale.domain(d3.extent(years));
  	yScale.domain([0, d3.max(IEValue)]);
 
  	canvas.select('.x.axis').transition()
- 			.call(xAxis);
+ 			.call(make_x_axis(xScale)
+            	.tickSize(-height, 0, 0));
  	canvas.select('.y.axis').transition()
- 			.call(yAxis);
+ 			.call(make_y_axis(yScale)
+            .tickSize(-width, 0, 0));
 
-
-
+//*********************************************CREATE LINES************************************//
+ 	//line function.
  	var lineFunc = d3.svg.line()
 					.x(function(d){
 				 		return xScale(d.x);
@@ -236,27 +301,113 @@ function drawChart(ctyCode){
 				 	})
 				 	.interpolate('basis');
 
-	//add Import line
+	var exportLine = d3.svg.line()
+						.x(function(d){return xScale(d.x);})
+						.y(function(d){return yScale(+d.exportY);})
+						.interpolate('basis');
+	var importLine = d3.svg.line()
+						.x(exportLine.x())
+						.y(function(d){return yScale(+d.exportX);})
+						.interpolate('basis');
+
+//****************************CREATE AREA BETWEEN LINES************************************//
+
+	var areaAboveImportLine = d3.svg.area()
+								.x(lineFunc.x())
+								.y0(lineFunc.y())
+								.y1(0)
+								.interpolate("basis");
+	var areaBelowImportLine = d3.svg.area()
+								.x(lineFunc.x())
+								.y0(lineFunc.y())
+								.y1(height-1)
+								.interpolate("basis");
+	var areaAboveExportLine = d3.svg.area()
+								.x(lineFunc.x())
+								.y0(lineFunc.y())
+								.y1(0)
+								.interpolate("basis");
+	var areaBelowExportLine = d3.svg.area()
+								.x(lineFunc.x())
+								.y0(lineFunc.y())
+								.y1(height-1)
+								.interpolate("basis");
+	
+	var defs = graph.append('defs').attr("id", "currValue");
+
+	defs.append("clipPath")
+		.attr("id", "clip-import","currValue")
+		.append("path")
+		.datum(IMonthVals)
+		.attr("d", areaAboveImportLine);
+
+	defs.append("clipPath")
+		.attr("id", "clip-export","currValue")
+		.append("path")
+		.datum(EMonthVals)
+		.attr("d", areaAboveExportLine);
+
 	graph.append("path")
+			.datum(IMonthVals)
+			.attr("d", areaBelowImportLine)
 			.attr("id", "currValue")
+			.attr("clip-path", "url(#clip-export)")
+			.attr("fill", "red")
+			.attr("opacity", .5);
+
+	graph.append("path")
+			.datum(EMonthVals)
+			.attr("d", areaBelowExportLine)
+			.attr("id", "currValue")
+			.attr("clip-path", "url(#clip-import)")
+			.attr("fill", "green")
+			.attr("opacity", .5);
+
+
+//*********************************************CREATE LINES************************************//
+
+	//add Import line
+	var importLine=graph.append("path")
+			.attr("id", "currValue")
+			.attr("class", "importLine")
 			.attr("d", lineFunc(IMonthVals))
 			.attr("stroke", "#FFB332")
+			.attr("opacity", .8)
+			.attr("stroke-width", 5)
+			.attr("fill", "none");
+	//add Import inner line
+	var importLine2=graph.append("path")
+			.attr("id", "currValue")
+			.attr("class", "importLine")
+			.attr("d", lineFunc(IMonthVals))
+			.attr("stroke", "#000000")
 			.attr("opacity", .9)
-			.attr("stroke-width", 4)
+			.attr("stroke-width", 1)
 			.attr("fill", "none");
 	//add Export line
-	graph.append("path")
+	var exportLine=graph.append("path")
 			.attr("id", "currValue")
+			.attr("class", "exportLine")
 			.attr("d", lineFunc(EMonthVals))
 			.attr("stroke", "#FF4F4F")
 			.attr("opacity", .9)
 			.attr("stroke-width", 4)
 			.attr("fill", "none");
+	//add export inner line
+	var exportLine2=graph.append("path")
+			.attr("id", "currValue")
+			.attr("class", "exportLine")
+			.attr("d", lineFunc(EMonthVals))
+			.attr("stroke", "#000000")
+			.attr("opacity", .9)
+			.attr("stroke-width", 1)
+			.attr("fill", "none");
+
 
 	var ellipseX=200;
 	var ellipseY=150;
 	var textX=75;
-	var textY=100;
+	var textY=110;
 	//add Label
 	graph.append("ellipse")
 			.attr("id", "currValue")
@@ -264,9 +415,18 @@ function drawChart(ctyCode){
 			.attr("cy", ellipseY)
 			.attr("rx", 170)
 			.attr("ry",120)
-			.attr("fill", "transparent")
+			.attr("fill", "white")
 			.attr("stroke", "black")
 			.attr("stroke-width", 1);
+	graph.append("ellipse")
+			.attr("id", "currValue")
+			.attr("cx", ellipseX)
+			.attr("cy", ellipseY)
+			.attr("rx", 170)
+			.attr("ry",120)
+			.attr("fill","#FF4F4F")
+			.attr("opacity", .1)
+			.attr("stroke-width", 0);
 
 	graph.append("text")
 			.attr("id", "currValue")
@@ -280,14 +440,31 @@ function drawChart(ctyCode){
 			.attr("x", textX+50)
 			.attr("y", textY+40)
 			.text("to and from all");
-	graph.append("text")
+	graph.append("g")
 			.attr("id", "currValue")
 			.attr("class", "titleText3")
-			.attr("x", textX)
-			.attr("y", textY+80)
-			.text(ctyName);
+			.attr("transform", "translate(55,0)")
+			.append("text")
+			.attr("x", (textX+150))
+			.attr("y", (textY+60))
+			.text(ctyName)
+			.call(wrap, 300);
 
- 	// //option to create points
+//outline around graph
+canvas.append("rect")
+	   .attr("height", height)
+	   .attr("width", width)
+	   .attr("fill", "transparent")
+	   .attr("stroke", "black")
+	   .attr("stroke-width", 2)
+	   .attr("transform", "translate("+ margin.right + "," + margin.top + ")");
+ 	
+}
+
+});
+
+
+// //option to create points
  	// IEPoints = graph.selectAll(".IEPoints")
  	// 								.data(keys);
 
@@ -316,18 +493,230 @@ function drawChart(ctyCode){
  	// IEPoints.exit().remove();
  	// console.log("part3");
 
-}
+// function drawChart(ctyCode){
+// 	//get array corresponding to specific IE data we will use.
+// 	var currIEData = IEData.get(ctyCode);
+// 	//find extent of dates for corresponding data
+// 	var years=[];
+// 	var keys=[];
+// 	var IEValue=[];
+// 	var IMonthVals=[];
+// 	var EMonthVals=[];
+// 	var combineMonthVals=[];
+// 	var ctyName;
 
-$("#country").change(function(){
-	$("#country option:selected").each(function(){
+// 	currIEData.forEach(function(d){
+// 		ctyName = currIEData.get(d)[0].CTYNAME;
+// 		var yr=currIEData.get(d)[0].year;
+// 		keys.push(yr);
+// 		years.push(gd2(currIEData.get(d)[0].year,12));
+// 		years.push(gd2(currIEData.get(d)[0].year,1));
+// 		combineMonthVals.push({importY:currIEData.get(d)[0].IJAN, exportY:currIEData.get(d)[0].EJAN, x:gd2(yr,1)});
+// 		combineMonthVals.push({importY:currIEData.get(d)[0].IFEB, exportY:currIEData.get(d)[0].EFEB, x:gd2(yr,2)});
+// 		combineMonthVals.push({importY:currIEData.get(d)[0].IMAR, exportY:currIEData.get(d)[0].EMAR, x:gd2(yr,3)});
+// 		combineMonthVals.push({importY:currIEData.get(d)[0].IAPR, exportY:currIEData.get(d)[0].EAPR, x:gd2(yr,4)});
+// 		combineMonthVals.push({importY:currIEData.get(d)[0].IMAY, exportY:currIEData.get(d)[0].EMAY, x:gd2(yr,5)});
+// 		combineMonthVals.push({importY:currIEData.get(d)[0].IJUN, exportY:currIEData.get(d)[0].EJUN, x:gd2(yr,6)});
+// 		combineMonthVals.push({importY:currIEData.get(d)[0].IJUL, exportY:currIEData.get(d)[0].EJUL, x:gd2(yr,7)});
+// 		combineMonthVals.push({importY:currIEData.get(d)[0].IAUG, exportY:currIEData.get(d)[0].EAUG, x:gd2(yr,8)});
+// 		combineMonthVals.push({importY:currIEData.get(d)[0].ISEP, exportY:currIEData.get(d)[0].ESEP, x:gd2(yr,9)});
+// 		combineMonthVals.push({importY:currIEData.get(d)[0].IOCT, exportY:currIEData.get(d)[0].EOCT, x:gd2(yr,10)});
+// 		combineMonthVals.push({importY:currIEData.get(d)[0].INOV, exportY:currIEData.get(d)[0].ENOV, x:gd2(yr,11)});
+// 		combineMonthVals.push({importY:currIEData.get(d)[0].IDEC, exportY:currIEData.get(d)[0].EDEC, x:gd2(yr,12)});		
+// 	});
 
-		var newCountry=$(this).text();
-		var index= countryNames.indexOf(newCountry);
-		d3.selectAll("#currValue").remove();
-		drawChart(countryCodes[index]);
-	})
+// 	combineMonthVals.forEach(function(d){
+// 		IEValue.push(+d.importY);
+// 		IEValue.push(+d.exportY);
+// 	});
+
+// 	//set x and y scales
+// 	xScale.domain(d3.extent(years));
+//  	yScale.domain([0, d3.max(IEValue)]);
+
+//  	canvas.select('.x.axis').transition()
+//  			.call(xAxis);
+//  	canvas.select('.y.axis').transition()
+//  			.call(yAxis);
+
+// //*********************************************CREATE LINES************************************//
+//  	//line function.
+//  	var lineFunc = d3.svg.line()
+// 					.x(function(d){
+// 				 		return xScale(d.x);
+// 				 	})
+// 				 	.y(function(d){
+// 				 		return yScale(+d.y);
+// 				 	})
+// 				 	.interpolate('basis');
+
+// 	var exportLine = d3.svg.line()
+// 						.x(function(d){return xScale(d.x);})
+// 						.y(function(d){return yScale(+d.exportY);})
+// 						.interpolate('basis');
+// 	var importLine = d3.svg.line()
+// 						.x(function(d){return xScale(d.x);})
+// 						.y(function(d){return yScale(+d.importY);})
+// 						.interpolate('basis');
+
+// //****************************CREATE AREA BETWEEN LINES************************************//
+
+// 	var areaAboveImportLine = d3.svg.area()
+// 								.x(importLine.x())
+// 								.y0(importLine.y())
+// 								.y1(0)
+// 								.interpolate("basis");
+// 	var areaBelowImportLine = d3.svg.area()
+// 								.x(importLine.x())
+// 								.y0(importLine.y())
+// 								.y1(height-1)
+// 								.interpolate("basis");
+// 	var areaAboveExportLine = d3.svg.area()
+// 								.x(exportLine.x())
+// 								.y0(exportLine.y())
+// 								.y1(0)
+// 								.interpolate("basis");
+// 	var areaBelowExportLine = d3.svg.area()
+// 								.x(exportLine.x())
+// 								.y0(exportLine.y())
+// 								.y1(height-1)
+// 								.interpolate("basis");
 	
-})
+// 	var defs = graph.append('defs');
+
+// 	defs.append("clipPath")
+// 		.attr("id", "clip-import")
+// 		.append("path")
+// 		.datum(combineMonthVals)
+// 		.attr("d", areaAboveImportLine);
+
+// 	defs.append("clipPath")
+// 		.attr("id", "clip-export")
+// 		.append("path")
+// 		.datum(combineMonthVals)
+// 		.attr("d", areaAboveExportLine);
+
+// 	graph.append("path")
+// 			.datum(combineMonthVals)
+// 			.attr("d", areaBelowImportLine)
+// 			.attr("id", "currValue")
+// 			.attr("clip-path", "url(#clip-export)")
+// 			.attr("fill", "red")
+// 			.attr("opacity", .5);
+
+// 	graph.append("path")
+// 			.datum(combineMonthVals)
+// 			.attr("d", areaBelowExportLine)
+// 			.attr("id", "currValue")
+// 			.attr("clip-path", "url(#clip-import)")
+// 			.attr("fill", "green")
+// 			.attr("opacity", .5);
 
 
-});
+// //*********************************************CREATE LINES************************************//
+
+// 	//add Import line
+// 	var importLine=graph.append("path")
+// 			.attr("id", "currValue")
+// 			.attr("class", "importLine")
+// 			.attr("d", importLine(combineMonthVals))
+// 			.attr("stroke", "#FFB332")
+// 			.attr("opacity", .8)
+// 			.attr("stroke-width", 5)
+// 			.attr("fill", "none");
+// 	//add Import inner line
+// 	// var importLine2=graph.append("path")
+// 	// 		.attr("id", "currValue")
+// 	// 		.attr("class", "importLine2")
+// 	// 		.attr("d", importLine(combineMonthVals))
+// 	// 		.attr("stroke", "#000000")
+// 	// 		.attr("opacity", .9)
+// 	// 		.attr("stroke-width", 1)
+// 	// 		.attr("fill", "none");
+// 	//add Export line
+// 	var exportLine=graph.append("path")
+// 			.attr("id", "currValue")
+// 			.attr("class", "exportLine")
+// 			.attr("d", exportLine(combineMonthVals))
+// 			.attr("stroke", "#FF4F4F")
+// 			.attr("opacity", .9)
+// 			.attr("stroke-width", 4)
+// 			.attr("fill", "none");
+// 	//add export inner line
+// 	// var exportLine2=graph.append("path")
+// 	// 		.attr("id", "currValue")
+// 	// 		.attr("class", "exportLine2")
+// 	// 		.attr("d", exportLine(combineMonthVals))
+// 	// 		.attr("stroke", "#000000")
+// 	// 		.attr("opacity", .9)
+// 	// 		.attr("stroke-width", 1)
+// 	// 		.attr("fill", "none");
+
+
+// 	var ellipseX=200;
+// 	var ellipseY=150;
+// 	var textX=75;
+// 	var textY=110;
+// 	//add Label
+// 	graph.append("ellipse")
+// 			.attr("id", "currValue")
+// 			.attr("cx", ellipseX)
+// 			.attr("cy", ellipseY)
+// 			.attr("rx", 170)
+// 			.attr("ry",120)
+// 			.attr("fill", "transparent")
+// 			.attr("stroke", "black")
+// 			.attr("stroke-width", 1);
+
+// 	graph.append("text")
+// 			.attr("id", "currValue")
+// 			.attr("class", "titleText")
+// 			.attr("x", textX)
+// 			.attr("y", textY)
+// 			.text("EXPORTS & IMPORTS");
+// 	graph.append("text")
+// 			.attr("id", "currValue")
+// 			.attr("class", "titleText2")
+// 			.attr("x", textX+50)
+// 			.attr("y", textY+40)
+// 			.text("to and from all");
+// 	graph.append("g")
+// 			.attr("id", "currValue")
+// 			.attr("class", "titleText3")
+// 			.attr("transform", "translate(55,0)")
+// 			.append("text")
+// 			.attr("x", (textX+150))
+// 			.attr("y", (textY+60))
+// 			.text(ctyName)
+// 			.call(wrap, 300);
+
+//  	// //option to create points
+//  	// IEPoints = graph.selectAll(".IEPoints")
+//  	// 								.data(keys);
+
+//  	// console.log(IEPoints);
+//  	// IEPoints.enter()
+//  	// 		.append("g")
+//  	// 		.attr("class", "IEPoints")
+//  	// 		.append("circle")
+//  	// 		.attr("class", "points");
+
+//  	// console.log("part 2");
+
+//  	// console.log(IEPoints);
+
+//  	// IEPoints.select(".points")
+//  	// 		.attr("cx", function(d){
+//  	// 			console.log(d);
+//  	// 			return xScale(gd(currIEData.get(d)[0].year));
+//  	// 		})
+//  	// 		.attr("cy", function(d){
+//  	// 			return yScale(currIEData.get(d)[0].IYR);
+//  	// 		})
+//  	// 		.attr("r", 5)
+//  	// 		.attr("fill", "blue");
+
+//  	// IEPoints.exit().remove();
+//  	// console.log("part3");
+
+// }
