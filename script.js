@@ -367,7 +367,7 @@ var ellipseX=200;
 	var areaBelowImportLine = d3.svg.area()
 								.x(lineFunc.x())
 								.y0(lineFunc.y())
-								.y1(height-1)
+								.y1(height-3)
 								.interpolate("basis");
 	var areaAboveExportLine = d3.svg.area()
 								.x(lineFunc.x())
@@ -377,7 +377,7 @@ var ellipseX=200;
 	var areaBelowExportLine = d3.svg.area()
 								.x(lineFunc.x())
 								.y0(lineFunc.y())
-								.y1(height-1)
+								.y1(height-3)
 								.interpolate("basis");
 	
 	var defs = graph.append('defs').attr("id", "currValue");
