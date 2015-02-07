@@ -12,15 +12,19 @@ var IEPoints;
 var countryNames;
 var countryNames1;
 
+
+//create a canvas to draw on
 var canvas = d3.select("#canvas").append("svg")
 				.attr("class", "chart")
 				.attr("width", width)
 				.attr("height", height)
 				.attr("overflow", "visible");
 
+//create the x scale and y scale (x scale is a time scale)
 var xScale = d3.time.scale().range([0, width]);
 var yScale = d3.scale.linear().range([height,0]);
 
+//currently not used. Might use to format the values along the y axis
 var ieValFormat = d3.format(function(d){
 	if(d<1000){
 		return (d/100);
@@ -48,6 +52,8 @@ function make_y_axis(scale) {
         .ticks(10)
 }
 
+
+//append x axis to canvas, .tickSize of -height makes the ticks go across the graph like a grid.
 canvas.append("g")         
         .attr("class", "x axis", "grid")
         .attr("transform", "translate("+margin.right+"," + (height+margin.top) + ")")
@@ -56,6 +62,7 @@ canvas.append("g")
             .tickFormat("")
         )
 
+//append y axis.
 canvas.append("g")         
         .attr("class", "y axis", "grid")
         .attr("transform", "translate("+ (width+margin.right) + "," + margin.top +")")
@@ -83,10 +90,7 @@ canvas.append("rect")
 		.attr("width", bgWidth)
 		.attr("fill","#FF4F4F")
 		.attr("opacity", .1)
-		.attr("transform", "translate(" + (margin.right-(bgWidth-width)/2+50) + "," + (margin.top-(bgHeight-height)/2) + ")");			  
-
-
-
+		.attr("transform", "translate(" + (margin.right-(bgWidth-width)/2+50) + "," + (margin.top-(bgHeight-height)/2) + ")");			 
 //outline around graph and y axis
 canvas.append("rect")
 	   .attr("height", height)
@@ -95,7 +99,6 @@ canvas.append("rect")
 	   .attr("stroke", "black")
 	   .attr("stroke-width", 2)
 	   .attr("transform", "translate("+ margin.right + "," + margin.top + ")");
-
 //3rd rect outline
 canvas.append("rect")
 	   .attr("height", height+100)
@@ -104,7 +107,6 @@ canvas.append("rect")
 	   .attr("stroke", "black")
 	   .attr("stroke-width", 2)
 	   .attr("transform", "translate("+ (margin.right-50) + "," + (margin.top-50) + ")");
-
 //4th rect outline
 canvas.append("rect")
 	   .attr("height", height+120)
@@ -113,7 +115,6 @@ canvas.append("rect")
 	   .attr("stroke", "black")
 	   .attr("stroke-width", 5)
 	   .attr("transform", "translate("+ (margin.right-60) + "," + (margin.top-60) + ")");
-
 // canvas.append("g")
 // 	  .attr("class", "x axis", "grid")
 // 	  .attr("transform", "translate("+margin.right+"," + (height+margin.top) + ")")
@@ -123,7 +124,7 @@ canvas.append("rect")
 // 	  .attr("class", "y axis", "grid")
 // 	  .attr("transform", "translate("+ (width+margin.right) + "," + margin.top +")")
 // 	  .call(yAxis);
-
+//Axis label for Y
 canvas.append("text")
 		.attr("class", "axisLabel")
 		.attr("x", margin.right)
@@ -131,13 +132,13 @@ canvas.append("text")
 		.attr("transform", "rotate(270 "+  (margin.right-7)+ "," + (margin.top+height/2+10)+")")
 		.attr("text-anchor", "middle")
 		.text("Money");
-
+//Axis label for X
 canvas.append("text")
 		.attr("class", "axisLabel")
 		.attr("transform", "translate("+(margin.right+width/2)+"," + (margin.top-5) + ")")
 		.attr("text-anchor", "middle")
 		.text("Time");
-
+//creates a group called graph which will be what the lines and fill are attached to.
 var graph = canvas.append("g")
 				  .attr("class", "graph")
 				  .attr("transform", "translate(" + margin.right + "," + margin.top + ")");
@@ -148,25 +149,27 @@ function gd(year){
 	var nDate= new Date(yearN, 1,15);
 	return nDate;
 }
-
+//creates a new date object and returns it when passed year and month
 function gd2(year, month){
 	var yearN= +year;
 	var nDate= new Date(yearN, month,15);
 	return nDate;
 }
 
+//here, export all of the data.
 d3.csv("all_import_export_country.csv", function(error,data){
 	if(error){
 			console.log(error);
 	}
 	else{
-		allIEData = data;
-		sortData(allIEData);
-		addList();
-		drawChart(9); //to draw the current chart selected, must imput ctyCode to drawChart function in Integer format, not as a string
+		allIEData = data; //store data
+		sortData(allIEData); //sort data
+		addList(); //add all country names to dropdown option list.
+		drawChart(9); //to draw the current chart (right now the chart will display the country with ctyCode #9)
 	}
 });
 
+//creates a list for the dropdown options bar out of all of the different country names.
 function addList(){
     var select = document.getElementById("country");
     for(var i = 0; i <= countryNames.length; ++i) {
@@ -176,6 +179,7 @@ function addList(){
       }
      }
 
+//sorts allIEData variable by first organizing eachdata object by the citycode and then by the year.
 function sortData(data){
 	IEData= d3.nest().key(function(d){return d.CTYCODE;})
 					 .key(function(d){return d.year;})
@@ -188,7 +192,7 @@ function sortData(data){
 
 
 
-
+//when a new country is selected, this function removes all objects with the id "currValue" and calls drawChart with the ctycode of the country selected.
 $("#country").change(function(){
 	$("#country option:selected").each(function(){
 		var newCountry=$(this).text();
@@ -199,6 +203,7 @@ $("#country").change(function(){
 	
 })
 
+//a function that wraps the text for the label inside the Graph title circle. 
 function wrap(text, width) {
   text.each(function() {
     var text = d3.select(this),
@@ -225,6 +230,7 @@ function wrap(text, width) {
 
 
 
+//where I draw the chart. This is called each time a different country is selected. The ctyCode of the country must be input.
 function drawChart(ctyCode){
 	//get array corresponding to specific IE data we will use.
 	var currIEData = IEData.get(ctyCode);
@@ -232,11 +238,12 @@ function drawChart(ctyCode){
 	var years=[];
 	var keys=[];
 	var IEValue=[];
-	var IMonthVals=[];
+	var IMonthVals=[]; //Import monthly values 2D array. Format is [{y:monthvalue, x:date}, ....]
 	var EMonthVals=[];
-	var combineMonthVals=[];
+	var combineMonthVals=[]; // combines all import and export values into one array.
 	var ctyName;
 
+//this is totally not the best way to format the data, but I just kindof brute forced it into the format that I wanted.
 	currIEData.forEach(function(d){
 		ctyName = currIEData.get(d)[0].CTYNAME;
 		var yr=currIEData.get(d)[0].year;
@@ -278,8 +285,8 @@ function drawChart(ctyCode){
 	})
 
 	//set x and y scales
-	xScale.domain(d3.extent(years));
- 	yScale.domain([0, d3.max(IEValue)]);
+	xScale.domain(d3.extent(years)); // this makes the x axis adjust to the years with available data for each country
+ 	yScale.domain([0, d3.max(IEValue)]); // this makes the height of the y axis change based off of the largest import or export value.
 
  	canvas.select('.x.axis').transition()
  			.call(make_x_axis(xScale)
@@ -338,7 +345,7 @@ var ellipseX=200;
 
 
 //*********************************************CREATE LINES************************************//
- 	//line function.
+ 	//line function that takes data from the IMonthValue or EMonthValue arrays created above and creates a line by accessing each x and y value.
  	var lineFunc = d3.svg.line()
 					.x(function(d){
 				 		return xScale(d.x);
@@ -399,7 +406,7 @@ var ellipseX=200;
 			.attr("d", areaBelowImportLine)
 			.attr("id", "currValue")
 			.attr("clip-path", "url(#clip-export)")
-			.attr("fill", "red")
+			.attr("fill", "red") //fill color when imports>export
 			.attr("opacity", .5);
 
 	graph.append("path")
@@ -407,7 +414,7 @@ var ellipseX=200;
 			.attr("d", areaBelowExportLine)
 			.attr("id", "currValue")
 			.attr("clip-path", "url(#clip-import)")
-			.attr("fill", "green")
+			.attr("fill", "green") //where fill color between import and export (when we are exporting more) is set.
 			.attr("opacity", .5);
 
 
@@ -418,8 +425,8 @@ var ellipseX=200;
 			.attr("id", "currValue")
 			.attr("class", "importLine")
 			.attr("d", lineFunc(IMonthVals))
-			.attr("stroke", "#FFB332")
-			.attr("opacity", .8)
+			.attr("stroke", "#FFB332") // this is where the color for the import line is set
+			.attr("opacity", .8) // here is opacity for import line
 			.attr("stroke-width", 5)
 			.attr("fill", "none");
 	//add Import inner line
@@ -427,7 +434,7 @@ var ellipseX=200;
 			.attr("id", "currValue")
 			.attr("class", "importLine")
 			.attr("d", lineFunc(IMonthVals))
-			.attr("stroke", "#000000")
+			.attr("stroke", "#000000") // this is the inner line for the import line
 			.attr("opacity", .9)
 			.attr("stroke-width", 1)
 			.attr("fill", "none");
@@ -436,8 +443,8 @@ var ellipseX=200;
 			.attr("id", "currValue")
 			.attr("class", "exportLine")
 			.attr("d", lineFunc(EMonthVals))
-			.attr("stroke", "#FF4F4F")
-			.attr("opacity", .9)
+			.attr("stroke", "#FF4F4F") //color of export line
+			.attr("opacity", .8)
 			.attr("stroke-width", 4)
 			.attr("fill", "none");
 	//add export inner line
@@ -466,6 +473,7 @@ canvas.append("rect")
 });
 
 
+///////////////////////////////////////OLD CODE OPTIONS, MOSTLY IRRELEVANT NOW///////////////////////////////////////////////////
 // //option to create points
  	// IEPoints = graph.selectAll(".IEPoints")
  	// 								.data(keys);
